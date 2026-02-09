@@ -1,7 +1,7 @@
 services:
-  vaultwarden_test:
+  vaultwarden:
     image: vaultwarden/server:1.35.2
-    container_name: vaultwarden_test
+    container_name: vaultwarden
     environment:
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
     volumes:
