@@ -5,7 +5,7 @@ services:
     environment:
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
     volumes:
-      - /etc/bitwarden-data:/data
+      - /etc/bitwarden_data:/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bitwarden-router.rule=Host(`bitwarden.moser.ddnsfree.com`)"
