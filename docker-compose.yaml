@@ -41,8 +41,7 @@ services:
       BACKUP_KEEP_DAYS: "14"
 
       # Optional: Health-/Mail-Benachrichtigung (später ergänzbar)
-      PING_URL: "https://hc-ping.com/340da70a-b6c1-431e-9ebc-c1e8a01cb837"
-      PING_URL_WHEN_SUCCESS: "success"
+      PING_URL_WHEN_SUCCESS: "https://hc-ping.com/340da70a-b6c1-431e-9ebc-c1e8a01cb837"
       # MAIL_SMTP_ENABLE: "FALSE"
 
       # Zeitzone (für Cron)
