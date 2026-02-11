@@ -16,6 +16,42 @@ services:
     restart: unless-stopped
     networks:
       - proxy
+      
+  vaultwarden-backup:
+    image: ttionya/vaultwarden-backup:latest
+    container_name: vaultwarden-backup
+    restart: always
+    depends_on:
+      - vaultwarden
+    environment:
+      # rclone: Name & Zielverzeichnis (kannst du so übernehmen)
+      RCLONE_REMOTE_NAME: "BitwardenBackup"
+      RCLONE_REMOTE_DIR: "fritz.nas/Backup/Vaultwarden"
+
+      # Zeitplan (Cron): täglich um 03:00 Uhr
+      CRON: "0 3 * * *"
+
+      # Zip-Optionen (optional, aber empfehlenswert)
+      ZIP_ENABLE: "true"
+      ZIP_PASSWORD: "${VAULTWARDEN_ADMIN_TOKEN}"
+      ZIP_TYPE: "zip"
+      BACKUP_FILE_SUFFIX: "%Y%m%d"
+
+      # Aufbewahrung (0 = nicht löschen)
+      BACKUP_KEEP_DAYS: "14"
+
+      # Optional: Health-/Mail-Benachrichtigung (später ergänzbar)
+      # PING_URL: ""
+      # MAIL_SMTP_ENABLE: "FALSE"
+
+      # Zeitzone (für Cron)
+      TIMEZONE: "Europe/Vienna"
+    # Wichtig: den Host-Pfad deiner Vaultwarden-Daten nach /bitwarden/data mounten
+    volumes:
+      - /etc/bitwarden_data:/bitwarden/data
+      # rclone-Konfiguration (persistente Credentials)
+      - vaultwarden-rclone-data:/config
+
 
 networks:
   proxy:
