@@ -42,6 +42,7 @@ services:
 
       # Optional: Health-/Mail-Benachrichtigung (später ergänzbar)
       PING_URL: "https://hc-ping.com/340da70a-b6c1-431e-9ebc-c1e8a01cb837"
+      PING_URL_WHEN_SUCCESS: "success"
       # MAIL_SMTP_ENABLE: "FALSE"
 
       # Zeitzone (für Cron)
