@@ -40,7 +40,7 @@ services:
     environment:
       - HEALTH_CHECK_URL=${HEALTH_CHECK_URL}
       - SLEEP_SECONDS=10
-      - RETENTION_DAYS=30
+      - RETENTION_DAYS=15
     volumes:
       - /etc/Cloud/Traefik:/source:ro
       - /mnt/fritz-nas/Backup/Traefik:/destination
