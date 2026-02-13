@@ -30,6 +30,16 @@ services:
     restart: always
     healthcheck:
       disable: false
+    networks:
+      - proxy
+      - immich_internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.immich-router.entrypoints=websecure"
+      - "traefik.http.routers.immich-router.rule=Host(`evcc.moser.ddnsfree.com`)"
+      - "traefik.http.routers.immich-router.service=evcc-service"
+      - "traefik.http.routers.immich-router.tls=true"
+      - "traefik.http.services.immich-service.loadbalancer.server.port=2283"  
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -46,6 +56,8 @@ services:
     restart: always
     healthcheck:
       disable: false
+    networks:
+      - immich_internal  
 
   redis:
     container_name: immich_redis
@@ -53,6 +65,8 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
+    networks:
+      - immich_internal
 
   database:
     container_name: immich_postgres
@@ -71,6 +85,16 @@ services:
     restart: always
     healthcheck:
       disable: false
+    networks:
+      - immich_internal  
 
 volumes:
   model-cache:
+
+networks:
+  proxy:
+    external: true
+  immich_internal:
+    name: immich_internal
+    driver: bridge
+    internal: true
