@@ -53,13 +53,11 @@ services:
         apk add --no-cache zip curl &&
         echo 'Waiting for NAS to wake up...' &&
         sleep $$SLEEP_SECONDS &&
-        if [ -d '/destination' ] && [ -d '/source' ]; then
+        # The 'ls' check will fail if the handle is stale
+        if ls /destination > /dev/null 2>&1; then
           FILENAME=backup.$(date +%Y_%m_%d).zip &&
-          # -r: recursive
-          # -F S: File Sync (Syncs the zip content with the source, overwriting old data)
           zip -rFS /destination/$$FILENAME /source &&
           if [ $$? -eq 0 ]; then
-            echo 'Backup successful. Cleaning up old files...' &&
             find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
             curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
           else
@@ -67,7 +65,7 @@ services:
             exit 1;
           fi
         else
-          echo 'Error: NAS or Source missing';
+          echo 'Error: NAS mount is stale or disconnected';
           exit 1;
         fi
       "  
