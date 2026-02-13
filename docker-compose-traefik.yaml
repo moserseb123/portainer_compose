@@ -55,7 +55,9 @@ services:
         sleep $$SLEEP_SECONDS &&
         if [ -d '/destination' ] && [ -d '/source' ]; then
           FILENAME=backup.$(date +%Y_%m_%d).zip &&
-          zip -r /destination/$$FILENAME /source &&
+          # -r: recursive
+          # -F S: File Sync (Syncs the zip content with the source, overwriting old data)
+          zip -rFS /destination/$$FILENAME /source &&
           if [ $$? -eq 0 ]; then
             echo 'Backup successful. Cleaning up old files...' &&
             find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
@@ -69,7 +71,7 @@ services:
           exit 1;
         fi
       "  
-
+      
 networks:
   proxy:
     external: true
