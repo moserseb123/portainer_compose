@@ -32,7 +32,6 @@ services:
       disable: false
     networks:
       - proxy
-      - immich_internal
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immich-router.entrypoints=websecure"
