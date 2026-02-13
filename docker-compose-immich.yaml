@@ -36,8 +36,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immich-router.entrypoints=websecure"
-      - "traefik.http.routers.immich-router.rule=Host(`evcc.moser.ddnsfree.com`)"
-      - "traefik.http.routers.immich-router.service=evcc-service"
+      - "traefik.http.routers.immich-router.rule=Host(`immich.moser.ddnsfree.com`)"
+      - "traefik.http.routers.immich-router.service=immich-service"
       - "traefik.http.routers.immich-router.tls=true"
       - "traefik.http.services.immich-service.loadbalancer.server.port=2283"  
 
