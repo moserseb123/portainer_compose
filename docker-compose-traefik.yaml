@@ -53,28 +53,31 @@ services:
         apk add --no-cache zip curl &&
         echo 'Waiting for NAS to wake up...' &&
         sleep $$SLEEP_SECONDS &&
-        if ls /destination > /dev/null 2>&1; then
-          FILENAME=backup.$(date +%Y_%m_%d).zip &&
-          
-          # Force delete the existing file for today if it exists
-          # to prevent "Stale file handle" errors during overwrite
-          rm -f /destination/$$FILENAME &&
-          
-          echo 'Creating new backup archive...' &&
-          zip -r /destination/$$FILENAME /source &&
-          
-          if [ $$? -eq 0 ]; then
-            echo 'Backup successful. Cleaning up old files...' &&
-            find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
-            curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
-          else
-            echo 'Error: Zip failed';
-            exit 1;
-          fi
+       volumes:
+      - /etc/Cloud/Traefik:/source:ro
+      - /mnt/fritz-nas/Backup/Traefik:/destination
+    command: >
+      sh -c "
+      apk add --no-cache zip curl &&
+      echo 'Waiting for NAS to wake up...' &&
+      sleep $$SLEEP_SECONDS &&
+      if ls /destination > /dev/null 2>&1; then
+        FILENAME=backup.$(date +%Y_%m_%d).zip &&
+        echo 'Removing existing file to prevent stale handles...' &&
+        rm -f /destination/$$FILENAME &&
+        echo 'Creating new backup archive...' &&
+        if zip -r /destination/$$FILENAME /source; then
+          echo 'Backup successful. Cleaning up old files...' &&
+          find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
+          curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
         else
-          echo 'Error: NAS mount is stale or disconnected';
+          echo 'Error: Zip failed';
           exit 1;
         fi
+      else
+        echo 'Error: NAS mount is stale or disconnected';
+        exit 1;
+      fi
       " 
       
 networks:
