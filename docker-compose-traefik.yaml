@@ -31,7 +31,7 @@ services:
     networks:
       - proxy
 
-    traefik-backup:
+  traefik-backup:
     image: alpine:latest
     container_name: traefik-backup
     restart: "no"
