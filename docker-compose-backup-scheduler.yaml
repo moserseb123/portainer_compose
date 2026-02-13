@@ -11,9 +11,13 @@ services:
     labels:
       ofelia.enabled: "true"
       # Run every day at 03:00:00 (second minute hour day month weekday)
-      ofelia.job-run.traefik-daily-backup.schedule: "0 0 3 * * *"
+      ofelia.job-run.traefik-backup-task.schedule: "0 0 3 * * *"
       # Tell Ofelia to start the container by name
-      ofelia.job-run.traefik-daily-backup.container: "traefik-backup"
+      ofelia.job-run.traefik-backup-task.container: "traefik-backup"
+      # Run every day at 03:00:00 (second minute hour day month weekday)
+      ofelia.job-run.evcc-backup-task.schedule: "0 * * * * *"
+      # Tell Ofelia to start the container by name
+      ofelia.job-run.evcc-backup-task.container: "evcc_2"
 
       
 networks:
