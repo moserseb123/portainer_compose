@@ -3,9 +3,9 @@ services:
     image: evcc/evcc-unlocked:1.0.0
     ports:
       - "7070:7070"
-    container_name: evcc_2
+    container_name: evcc
     volumes:
-      - /etc/Cloud/evcctest:/root/.evcc
+      - /etc/Cloud/EVCC:/root/.evcc
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.evcc-router.entrypoints=websecure"
@@ -28,7 +28,7 @@ services:
       - SLEEP_SECONDS=10
       - RETENTION_DAYS=15
     volumes:
-      - /etc/Cloud/evcctest:/source:ro
+      - /etc/Cloud/EVCC:/source:ro
       - /mnt/fritz-nas/Backup/EVCC:/destination
     command: >
       sh -c "
