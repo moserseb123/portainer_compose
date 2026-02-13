@@ -39,7 +39,7 @@ services:
       - "traefik.http.routers.immich-router.rule=Host(`immich.moser.ddnsfree.com`)"
       - "traefik.http.routers.immich-router.service=immich-service"
       - "traefik.http.routers.immich-router.tls=true"
-      - "traefik.http.services.immich-service.loadbalancer.server.port=2283"
+      - "traefik.http.services.immich-service.loadbalancer.server.port=80"
       - "traefik.docker.network=proxy"
 
   immich-machine-learning:
