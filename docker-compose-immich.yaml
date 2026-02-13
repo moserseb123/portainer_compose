@@ -31,8 +31,8 @@ services:
     healthcheck:
       disable: false
     networks:
-      - proxy
       - immich-internal
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immich-router.entrypoints=websecure"
