@@ -9,7 +9,8 @@ services:
       - DYNU_API_KEY=${DYNU_API_KEY}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /etc/Cloud/Traefik:/data
+      - /etc/Cloud/Traefik/acme.json:/acme.json
+      - /etc/Cloud/Traefik/traefik.yaml:/traefik.yaml
     labels:
       - "traefik.enable=true"
       
