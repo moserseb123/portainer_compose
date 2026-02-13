@@ -1,1 +1,32 @@
+services:
+  traefik:
+    image: traefik:v3.6.7
+    container_name: traefik_2
+    environment:
+      - DYNU_API_KEY=${DYNU_API_KEY}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/Cloud/Traefik:/data
+    labels:
+      - "traefik.enable=true"
+      
+      # Using variables for the Router Rule
+      - "traefik.http.routers.traefik-router.rule=Host(`${DASHBOARD_SUBDOMAIN}.${DOMAIN_NAME}`)"
+      
+      # Using variables for TLS certificates
+      - "traefik.http.routers.traefik-router.tls.domains[0].main=${DOMAIN_NAME}"
+      - "traefik.http.routers.traefik-router.tls.domains[0].sans=*.${DOMAIN_NAME}"
 
+      # Reference other settings
+      - "traefik.http.routers.traefik-router.entrypoints=websecure"
+      - "traefik.http.routers.traefik-router.service=api@internal"
+      - "traefik.http.routers.traefik-router.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_CREDENTIALS}"
+      - "traefik.http.routers.traefik-router.middlewares=traefik-auth"
+    restart: unless-stopped
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
