@@ -1,6 +1,9 @@
 services:
   traefik:
     image: traefik:v3.6.7
+    ports:
+      - "80:80"
+      - "443:443"
     container_name: traefik_2
     environment:
       - DYNU_API_KEY=${DYNU_API_KEY}
