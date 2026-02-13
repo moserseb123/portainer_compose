@@ -31,6 +31,45 @@ services:
     networks:
       - proxy
 
+    traefik-backup:
+    image: alpine:latest
+    container_name: traefik-backup
+    restart: "no"
+    networks:
+      - proxy
+    environment:
+      - HEALTH_CHECK_URL=${HEALTH_CHECK_URL}
+      - SLEEP_SECONDS=10
+      - RETENTION_DAYS=30
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-run.traefik-daily-backup.schedule: "0 0 3 * * *"
+      ofelia.job-run.traefik-daily-backup.container: "traefik-backup"
+    volumes:
+      - /etc/Cloud/Traefik:/source:ro
+      - /mnt/fritz-nas/Backup/Traefik:/destination
+    command: >
+      sh -c "
+        apk add --no-cache zip curl &&
+        echo 'Waiting for NAS to wake up...' &&
+        sleep $$SLEEP_SECONDS &&
+        if [ -d '/destination' ] && [ -d '/source' ]; then
+          FILENAME=backup.$(date +%Y_%m_%d).zip &&
+          zip -r /destination/$$FILENAME /source &&
+          if [ $$? -eq 0 ]; then
+            echo 'Backup successful. Cleaning up old files...' &&
+            find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
+            curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
+          else
+            echo 'Error: Zip failed';
+            exit 1;
+          fi
+        else
+          echo 'Error: NAS or Source missing';
+          exit 1;
+        fi
+      "  
+
 networks:
   proxy:
     external: true
