@@ -48,16 +48,23 @@ services:
     volumes:
       - /etc/Cloud/Traefik:/source:ro
       - /mnt/fritz-nas/Backup/Traefik:/destination
-    command: >
+   command: >
       sh -c "
         apk add --no-cache zip curl &&
         echo 'Waiting for NAS to wake up...' &&
         sleep $$SLEEP_SECONDS &&
-        # The 'ls' check will fail if the handle is stale
         if ls /destination > /dev/null 2>&1; then
           FILENAME=backup.$(date +%Y_%m_%d).zip &&
-          zip -rFS /destination/$$FILENAME /source &&
+          
+          # Force delete the existing file for today if it exists
+          # to prevent "Stale file handle" errors during overwrite
+          rm -f /destination/$$FILENAME &&
+          
+          echo 'Creating new backup archive...' &&
+          zip -r /destination/$$FILENAME /source &&
+          
           if [ $$? -eq 0 ]; then
+            echo 'Backup successful. Cleaning up old files...' &&
             find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
             curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
           else
