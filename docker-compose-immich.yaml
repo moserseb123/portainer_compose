@@ -40,6 +40,7 @@ services:
       - "traefik.http.routers.immich-router.service=immich-service"
       - "traefik.http.routers.immich-router.tls=true"
       - "traefik.http.services.immich-service.loadbalancer.server.port=2283"
+      - "traefik.docker.network=proxy"
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -87,11 +88,9 @@ services:
       disable: false
     networks:
       - immich-internal
-
-
+      
 volumes:
   model-cache:
-
 
 networks:
   proxy:
