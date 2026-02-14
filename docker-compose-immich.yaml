@@ -39,14 +39,7 @@ services:
       - "traefik.http.routers.immich-router.rule=Host(`immich.moser.ddnsfree.com`)"
       - "traefik.http.routers.immich-router.service=immich-service"
       - "traefik.http.routers.immich-router.tls=true"
-      
-      # Middleware to ensure headers are handled
-      - "traefik.http.routers.immich-router.middlewares=immich-headers"
-      - "traefik.http.middlewares.immich-headers.headers.customrequestheaders.X-Real-IP={{.RemoteAddr}}"
-      - "traefik.http.middlewares.immich-headers.headers.forwardedheaderscustomingrouphostsonly=true"
-      
       - "traefik.http.services.immich-service.loadbalancer.server.port=2283"
-      - "traefik.docker.network=proxy"
 
   immich-machine-learning:
     container_name: immich_machine_learning
