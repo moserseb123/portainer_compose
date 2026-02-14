@@ -31,6 +31,7 @@ services:
     healthcheck:
       disable: false
     networks:
+      - immich-internal
       - proxy
     labels:
       - "traefik.enable=true"
@@ -63,7 +64,7 @@ services:
     healthcheck:
       disable: false
     networks:
-      - proxy 
+      - immich-internal  
 
   redis:
     container_name: immich_redis
@@ -72,7 +73,7 @@ services:
       test: redis-cli ping || exit 1
     restart: always
     networks:
-      - proxy
+      - immich-internal
 
   database:
     container_name: immich_postgres
@@ -92,7 +93,7 @@ services:
     healthcheck:
       disable: false
     networks:
-      - proxy
+      - immich-internal
 
 
 volumes:
@@ -102,3 +103,5 @@ volumes:
 networks:
   proxy:
     external: true
+  immich-internal:
+    driver: bridge
