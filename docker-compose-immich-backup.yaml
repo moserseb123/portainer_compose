@@ -14,12 +14,12 @@ services:
       /bin/sh -c "
       apk add --no-cache bash zip curl coreutils &&
       set -e &&
-
-      # Prüfen, ob Source und Backup existieren
-      if [ ! -d /source ]; then
+      
+      # Prüfen, ob Source und Backup existieren (mittels ls >/dev/null 2>&1)
+      if ! ls /source >/dev/null 2>&1; then
           echo 'Source Ordner /source existiert nicht! Backup abgebrochen.'; exit 1
       fi
-      if [ ! -d /backup ]; then
+      if ! ls /backup >/dev/null 2>&1; then
           echo 'Destination Ordner /backup existiert nicht! Backup abgebrochen.'; exit 1
       fi
 
