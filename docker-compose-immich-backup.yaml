@@ -12,8 +12,12 @@ services:
       - /mnt/fritz-nas/Volume/Backup/Immich:/backup
     entrypoint: >
       /bin/sh -c "
-      tail -f /dev/null
+      apk add --no-cache bash zip curl coreutils &&
+      set -e &&
+      
+      
 
       echo 'Backup abgeschlossen.'
-      "  
+      tail -f /dev/null
+      "
     restart: "no"
