@@ -5,8 +5,8 @@ services:
     image: alpine:latest
     container_name: immich-backup
     environment:
-      VALIDATION_FACTOR: 80        # Prozent, z.B. 90 = 90%
-      SUCCESS_URL: "https://example.com/webhook"
+      - VALIDATION_FACTOR=${VALIDATION_FACTOR}   # Prozent, z.B. 90 = 90%
+      - HEALTH_CHECK_URL=${HEALTH_CHECK_URL}
     volumes:
       - /mnt/usb/Immich:/source:ro
       - /mnt/fritz-nas/Volume/Backup/Immich:/backup
@@ -58,7 +58,7 @@ services:
           if [ -n \"\$OLDFILE\" ]; then rm -f /backup/\$OLDFILE; fi
           mv \$ZIPFILE /backup/
           echo 'Backup erfolgreich übernommen'
-          curl -fsSL -X POST \$SUCCESS_URL || echo 'Webhook-Aufruf fehlgeschlagen'
+          curl -fsSL -X POST \$HEALTH_CHECK_URL || echo 'Webhook-Aufruf fehlgeschlagen'
       else
           echo 'Backup unvollständig! Datei nicht übernommen.'
           rm -f \$ZIPFILE
