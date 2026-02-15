@@ -10,7 +10,7 @@ services:
     volumes:
       - /mnt/usb/Immich/data:/source:ro
       - /mnt/fritz-nas/Volume/Backup/Immich:/backup
-   entrypoint: >
+    entrypoint: >
       /bin/sh -c "
       apk add --no-cache bash zip curl coreutils &&
       set -e &&
@@ -66,4 +66,4 @@ services:
 
       echo 'Backup abgeschlossen.'
       "
-    restart: "no"
+      restart: "no"
