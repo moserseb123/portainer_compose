@@ -26,7 +26,7 @@ services:
     environment:
       # rclone: Name & Zielverzeichnis (kannst du so übernehmen)
       RCLONE_REMOTE_NAME: "BitwardenBackup"
-      RCLONE_REMOTE_DIR: "fritz.nas/Backup/Vaultwarden"
+      RCLONE_REMOTE_DIR: "fritz.nas/Volume/Backup/Vaultwarden"
 
       # Zeitplan (Cron): täglich um 03:00 Uhr
       CRON: "0 3 * * *"
