@@ -13,57 +13,6 @@ services:
     entrypoint: >
       /bin/sh -c "
       tail -f /dev/null
-      apk add --no-cache bash zip curl coreutils &&
-      set -e &&
-      
-      # Prüfen, ob Source und Backup existieren (mittels ls >/dev/null 2>&1)
-      if ! ls /source >/dev/null 2>&1; then
-          echo 'Source Ordner /source existiert nicht! Backup abgebrochen.'; exit 1
-      fi
-      if ! ls /backup >/dev/null 2>&1; then
-          echo 'Destination Ordner /backup existiert nicht! Backup abgebrochen.'; exit 1
-      fi
-
-      TMPDIR=/backup/tmp
-      mkdir -p \$TMPDIR
-
-      TODAY=\$(date +%Y_%m_%d)
-      ZIPFILE=\$TMPDIR/backup.\$TODAY.zip
-
-      echo 'Starte Backup...' 
-      echo \"ZIP-Datei: \$ZIPFILE\" 
-
-      # ZIP mit Fortschritt direkt auf stdout
-      cd /source &&
-      zip -r \$ZIPFILE . 
-
-      echo 'ZIP erstellt, starte Validierung...' 
-
-      # Altes Backup ermitteln (älteste Datei mit Name 'backup')
-      OLDFILE=\$(ls -1 /backup | grep 'backup' | sort | head -n 1)
-      if [ -n \"\$OLDFILE\" ]; then
-          OLD_SIZE=\$(stat -c%s /backup/\$OLDFILE)
-      else
-          OLD_SIZE=0
-      fi
-
-      NEW_SIZE=\$(stat -c%s \$ZIPFILE)
-      MIN_SIZE=\$(( OLD_SIZE * VALIDATION_FACTOR / 100 ))
-
-      echo \"Altes Backup: \$OLDFILE, Größe: \$OLD_SIZE Bytes\" 
-      echo \"Neues Backup: \$ZIPFILE, Größe: \$NEW_SIZE Bytes\" 
-      echo \"Minimal erlaubte Größe: \$MIN_SIZE Bytes\" 
-
-      if [ \$NEW_SIZE -ge \$MIN_SIZE ]; then
-          echo 'Backup validiert, verschiebe in Backup Ordner...' 
-          if [ -n \"\$OLDFILE\" ]; then rm -f /backup/\$OLDFILE; fi
-          mv \$ZIPFILE /backup/
-          echo 'Backup erfolgreich übernommen'
-          curl -fsSL -X POST \$HEALTH_CHECK_URL || echo 'Webhook-Aufruf fehlgeschlagen'
-      else
-          echo 'Backup unvollständig! Datei nicht übernommen.'
-          rm -f \$ZIPFILE
-      fi
 
       echo 'Backup abgeschlossen.'
       "  
