@@ -11,6 +11,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/Cloud/Traefik/acme.json:/acme.json
       - /etc/Cloud/Traefik/traefik.yaml:/traefik.yaml:ro
+      - /etc/Cloud/Traefik/conf:/conf:ro
     labels:
       - "traefik.enable=true"
       
