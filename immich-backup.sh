@@ -159,8 +159,7 @@ fi
 PG_VER_OUT="${PG_VERSION:+pg${PG_VERSION}}"
 
 # Build DB dump filename using schema: restore-point-immich-db-backup-<YYYYMMDD>T<HHMMSS>-vX.Y.Z-pgM.N.sql
-TIMESTAMP="$(date +%Y%m%dT%H%M%S)"
-DB_DUMP_FILE="$DB_DUMP_DIR/restore-point-immich-db-backup-${TIMESTAMP}-${IMMICH_VER_OUT:-vUNKNOWN}-${PG_VER_OUT:-pgUNKNOWN}.sql"
+DB_DUMP_FILE="$DB_DUMP_DIR/restore-point-immich-db-backup-${IMMICH_VER_OUT:-vUNKNOWN}-${PG_VER_OUT:-pgUNKNOWN}.sql"
 
 # Tools
 command -v docker >/dev/null 2>&1 || { echo "$(ts) [ERROR] docker not found in PATH"; exit 1; }
