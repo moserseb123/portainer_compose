@@ -32,10 +32,10 @@ fi
 # =========
 # REQUIRED VARS FROM .env
 # =========
-: "${UPLOAD_LOCATION:?UPLOAD_LOCATION is required (path to Immich library)}}"
-: "${BACKUP_PATH:?BACKUP_PATH is required (NAS backup root)}}"
-: "${POSTGRES_CONTAINER:?POSTGRES_CONTAINER is required (Docker container name)}}"
-: "${DB_USER:?DB_USER is required (Postgres user)}}"
+: "${UPLOAD_LOCATION:?UPLOAD_LOCATION is required (path to Immich library)}"
+: "${BACKUP_PATH:?BACKUP_PATH is required (NAS backup root)}"
+: "${POSTGRES_CONTAINER:?POSTGRES_CONTAINER is required (Docker container name)}"
+: "${DB_USER:?DB_USER is required (Postgres user)}"
 
 # Optional: Healthchecks URL
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-}"
