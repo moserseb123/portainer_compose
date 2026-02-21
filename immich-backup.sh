@@ -81,8 +81,8 @@ if [[ ! -d "$BACKUP_PATH" ]]; then
   exit 1
 fi
 
-DB_DUMP_DIR="$BACKUP_PATH/database-backup"
-REPO="$BACKUP_PATH/immich-borg"
+DB_DUMP_DIR="$BACKUP_PATH/database"
+REPO="$BACKUP_PATH/files
 DB_DUMP_FILE="$DB_DUMP_DIR/immich-database.sql"
 
 mkdir -p "$DB_DUMP_DIR" "$REPO" "$UPLOAD_LOCATION"
@@ -116,13 +116,6 @@ docker exec -t "$POSTGRES_CONTAINER" \
 # =========
 # BORG BACKUP
 # =========
-if [[ ! -f "$REPO/config" ]]; then
-  echo "$(ts) [INFO] Initializing Borg repository at $REPO"
-  borg init --encryption=none "$REPO"
-  # For encryption instead:
-  # borg init --encryption=repokey "$REPO"
-fi
-
 echo "$(ts) [INFO] Creating Borg archive"
 borg create \
   --stats \
