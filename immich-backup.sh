@@ -158,7 +158,7 @@ else
 fi
 PG_VER_OUT="${PG_VERSION:+pg${PG_VERSION}}"
 
-# Build DB dump filename using schema: restore-point-immich-db-backup-<YYYYMMDD>T<HHMMSS>-vX.Y.Z-pgM.N.sql
+# Build DB dump filename using schema: restore-point-immich-db-backup-vX.Y.Z-pgM.N.sql
 DB_DUMP_FILE="$DB_DUMP_DIR/restore-point-immich-db-backup-${IMMICH_VER_OUT:-vUNKNOWN}-${PG_VER_OUT:-pgUNKNOWN}.sql"
 
 # Tools
