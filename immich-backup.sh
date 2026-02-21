@@ -31,7 +31,6 @@ fi
 # REQUIRED VARS FROM .env
 # =========
 : "${UPLOAD_LOCATION:?UPLOAD_LOCATION is required (path to Immich library)}}"
-: "${DB_DATA_DIR:?DB_DATA_DIR is required (reference path to DB data/config)}}"
 : "${BACKUP_PATH:?BACKUP_PATH is required (NAS backup root)}}"
 : "${POSTGRES_CONTAINER:?POSTGRES_CONTAINER is required (Docker container name)}}"
 : "${DB_USER:?DB_USER is required (Postgres user)}}"
@@ -81,11 +80,9 @@ if [[ ! -d "$BACKUP_PATH" ]]; then
   exit 1
 fi
 
-DB_DUMP_DIR="$BACKUP_PATH/database"
-REPO="$BACKUP_PATH/files
+DB_DUMP_DIR="$UPLOAD_LOCATION/my-database-backup"
+REPO="$BACKUP_PATH"
 DB_DUMP_FILE="$DB_DUMP_DIR/immich-database.sql"
-
-mkdir -p "$DB_DUMP_DIR" "$REPO" "$UPLOAD_LOCATION"
 
 # Tools
 command -v docker >/dev/null 2>&1 || { echo "$(ts) [ERROR] docker not found in PATH"; exit 1; }
@@ -95,10 +92,8 @@ command -v borg   >/dev/null 2>&1 || { echo "$(ts) [ERROR] borg not found in PAT
 # LOG CONTEXT
 # =========
 echo "$(ts) [INFO] Library path:  $UPLOAD_LOCATION"
-echo "$(ts) [INFO] DB data dir:   $DB_DATA_DIR   (reference only)"
 echo "$(ts) [INFO] Backup root:   $BACKUP_PATH"
 echo "$(ts) [INFO] Borg repo:     $REPO"
-echo "$(ts) [INFO] DB dump file:  $DB_DUMP_FILE"
 echo "$(ts) [INFO] Container:     $POSTGRES_CONTAINER"
 echo "$(ts) [INFO] DB user:       $DB_USER"
 
@@ -117,11 +112,11 @@ docker exec -t "$POSTGRES_CONTAINER" \
 # BORG BACKUP
 # =========
 echo "$(ts) [INFO] Creating Borg archive"
+ARCHIVE_NAME="$(date +"backup.%Y-%m-%d %H:%M:%S")"
 borg create \
   --stats \
-  "$REPO::{now}" \
+  "$REPO::${ARCHIVE_NAME}" \
   "$UPLOAD_LOCATION" \
-  "$DB_DUMP_DIR" \
   --exclude "$UPLOAD_LOCATION/thumbs" \
   --exclude "$UPLOAD_LOCATION/encoded-video"
 
