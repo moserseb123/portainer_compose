@@ -74,6 +74,13 @@ disable_maintenance() {
   echo "$(ts) [INFO] Immich maintenance mode disabled"
 }
 
+cleanup_db_dump() {
+  if [[ -n "${DB_DUMP_FILE:-}" && -f "$DB_DUMP_FILE" ]]; then
+    echo "$(ts) [INFO] Removing temporary DB dump: $DB_DUMP_FILE"
+    rm -f "$DB_DUMP_FILE" || echo "$(ts) [WARN] Failed to remove DB dump $DB_DUMP_FILE"
+  fi
+}
+
 ping_hc() {
   # $1 = suffix ("", "/start", "/fail")
   # $2 = optional payload message
@@ -99,6 +106,8 @@ on_error() {
     echo "$(ts) [WARN] Error occurred; attempting to disable Immich maintenance mode"
     disable_maintenance || echo "$(ts) [WARN] disable_maintenance failed"
   fi
+  # Clean up DB dump on error
+  cleanup_db_dump
   ping_hc "/fail" "Immich backup FAILED with exit code ${ec} at $(ts)"
   echo "$(ts) [ERROR] Backup failed (exit ${ec})"
   exit "$ec"
@@ -118,7 +127,40 @@ fi
 
 DB_DUMP_DIR="$UPLOAD_LOCATION/my-database-backup"
 REPO="$BACKUP_PATH"
-DB_DUMP_FILE="$DB_DUMP_DIR/immich-database.sql"
+
+# Determine Immich version (try immich-admin, then container image tag)
+IMMICH_VERSION=""
+if docker exec -t "$IMMICH_CONTAINER" immich-admin --version >/dev/null 2>&1; then
+  IMMICH_VERSION="$(docker exec -t "$IMMICH_CONTAINER" immich-admin --version 2>/dev/null | awk '{print $NF}')"
+else
+  image="$(docker inspect --format '{{.Config.Image}}' "$IMMICH_CONTAINER" 2>/dev/null || true)"
+  if [[ -n "$image" && "$image" == *:* ]]; then
+    IMMICH_VERSION="${image##*:}"
+  fi
+fi
+IMMICH_VERSION="${IMMICH_VERSION#v}"
+IMMICH_VER_OUT="${IMMICH_VERSION:+v${IMMICH_VERSION}}"
+
+# Determine Postgres version (try postgres binary, then psql, then image tag)
+PG_VERSION=""
+if docker exec -t "$POSTGRES_CONTAINER" postgres --version >/dev/null 2>&1; then
+  pg_full="$(docker exec -t "$POSTGRES_CONTAINER" postgres --version 2>/dev/null)"
+  PG_VERSION="$(echo "$pg_full" | grep -oE '[0-9]+\.[0-9]+' | head -n1)"
+elif docker exec -t "$POSTGRES_CONTAINER" psql --version >/dev/null 2>&1; then
+  pg_full="$(docker exec -t "$POSTGRES_CONTAINER" psql --version 2>/dev/null)"
+  PG_VERSION="$(echo "$pg_full" | grep -oE '[0-9]+\.[0-9]+' | head -n1)"
+else
+  pg_image="$(docker inspect --format '{{.Config.Image}}' "$POSTGRES_CONTAINER" 2>/dev/null || true)"
+  if [[ -n "$pg_image" && "$pg_image" == *:* ]]; then
+    tag="${pg_image##*:}"
+    PG_VERSION="$(echo "$tag" | grep -oE '[0-9]+\.[0-9]+' | head -n1)"
+  fi
+fi
+PG_VER_OUT="${PG_VERSION:+pg${PG_VERSION}}"
+
+# Build DB dump filename using schema: restore-point-immich-db-backup-<YYYYMMDD>T<HHMMSS>-vX.Y.Z-pgM.N.sql
+TIMESTAMP="$(date +%Y%m%dT%H%M%S)"
+DB_DUMP_FILE="$DB_DUMP_DIR/restore-point-immich-db-backup-${TIMESTAMP}-${IMMICH_VER_OUT:-vUNKNOWN}-${PG_VER_OUT:-pgUNKNOWN}.sql"
 
 # Tools
 command -v docker >/dev/null 2>&1 || { echo "$(ts) [ERROR] docker not found in PATH"; exit 1; }
@@ -137,6 +179,9 @@ echo "$(ts) [INFO] DB user:       $DB_USER"
 # DATABASE DUMP
 # =========
 #
+# Enable maintenance mode before dumping the DB
+enable_maintenance
+
 echo "$(ts) [INFO] Dumping Postgres from container '$POSTGRES_CONTAINER' to '$DB_DUMP_FILE'"
 docker exec -t "$POSTGRES_CONTAINER" \
   pg_dump --username="$DB_USER" --no-owner --no-privileges immich > "$DB_DUMP_FILE"
@@ -165,6 +210,10 @@ borg prune \
 
 echo "$(ts) [INFO] Compacting repository"
 borg compact "$REPO"
+
+# On success: remove temporary DB dump and disable maintenance mode
+cleanup_db_dump
+disable_maintenance || echo "$(ts) [WARN] disable_maintenance failed on success path"
 
 echo "$(ts) [INFO] Immich backup completed successfully"
 ping_hc "" "Immich backup OK at $(ts)"
