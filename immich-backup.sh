@@ -193,7 +193,7 @@ docker exec -t "$POSTGRES_CONTAINER" \
 # BORG BACKUP
 # =========
 echo "$(ts) [INFO] Creating Borg archive"
-ARCHIVE_NAME="$(date +"backup.%Y-%m-%d %H:%M:%S")"
+ARCHIVE_NAME="$(date +"backup.%Y-%m-%d_%H-%M-%S")"
 borg create \
   --stats \
   "$REPO::${ARCHIVE_NAME}" \
