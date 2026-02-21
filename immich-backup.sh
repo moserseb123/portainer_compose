@@ -39,11 +39,40 @@ fi
 
 # Optional: Healthchecks URL
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-}"
+# Container running the Immich server (used for maintenance mode)
+IMMICH_CONTAINER="${IMMICH_CONTAINER:-immich_server}"
 
 # =========
 # HELPERS
 # =========
 ts() { date +"%Y-%m-%d %H:%M:%S"; }
+
+# Track whether we successfully enabled maintenance mode so on_error can undo it
+MAINT_MODE_ENABLED=0
+
+enable_maintenance() {
+  echo "$(ts) [INFO] Enabling Immich maintenance mode in container: $IMMICH_CONTAINER"
+  if ! docker exec -t "$IMMICH_CONTAINER" immich-admin enable-maintenance-mode >/dev/null 2>&1; then
+    echo "$(ts) [ERROR] Failed to enable maintenance mode in container $IMMICH_CONTAINER"
+    return 1
+  fi
+  MAINT_MODE_ENABLED=1
+  echo "$(ts) [INFO] Immich maintenance mode enabled"
+}
+
+disable_maintenance() {
+  # Only attempt disable if we enabled it
+  if [[ "${MAINT_MODE_ENABLED:-0}" -ne 1 ]]; then
+    return 0
+  fi
+  echo "$(ts) [INFO] Disabling Immich maintenance mode in container: $IMMICH_CONTAINER"
+  if ! docker exec -t "$IMMICH_CONTAINER" immich-admin disable-maintenance-mode >/dev/null 2>&1; then
+    echo "$(ts) [WARN] Failed to disable maintenance mode in container $IMMICH_CONTAINER"
+    return 1
+  fi
+  MAINT_MODE_ENABLED=0
+  echo "$(ts) [INFO] Immich maintenance mode disabled"
+}
 
 ping_hc() {
   # $1 = suffix ("", "/start", "/fail")
@@ -65,6 +94,11 @@ ping_hc() {
 
 on_error() {
   local ec=$?
+  # Try to disable maintenance mode if we set it
+  if [[ "${MAINT_MODE_ENABLED:-0}" -eq 1 ]]; then
+    echo "$(ts) [WARN] Error occurred; attempting to disable Immich maintenance mode"
+    disable_maintenance || echo "$(ts) [WARN] disable_maintenance failed"
+  fi
   ping_hc "/fail" "Immich backup FAILED with exit code ${ec} at $(ts)"
   echo "$(ts) [ERROR] Backup failed (exit ${ec})"
   exit "$ec"
@@ -102,9 +136,10 @@ echo "$(ts) [INFO] DB user:       $DB_USER"
 # =========
 # DATABASE DUMP
 # =========
+#
 echo "$(ts) [INFO] Dumping Postgres from container '$POSTGRES_CONTAINER' to '$DB_DUMP_FILE'"
 docker exec -t "$POSTGRES_CONTAINER" \
-  pg_dumpall --clean --if-exists --username="$DB_USER" > "$DB_DUMP_FILE"
+  pg_dump --username="$DB_USER" --no-owner --no-privileges immich > "$DB_DUMP_FILE"
 
 # NOTE: Avoid gzip for better dedup with Borg. If you prefer compression:
 # docker exec -t "$POSTGRES_CONTAINER" pg_dumpall --clean --if-exists --username="$DB_USER" \
