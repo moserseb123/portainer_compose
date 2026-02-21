@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Basis für das Backup ist https://docs.immich.app/guides/template-backup-script/
+
 # =========
 # LOCATE SCRIPT DIR & LOAD .env
 # =========
