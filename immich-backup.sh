@@ -127,8 +127,8 @@ borg create \
 
 echo "$(ts) [INFO] Pruning old archives (keep weekly=4, monthly=3)"
 borg prune \
+  --keep-daily=7 \
   --keep-weekly=4 \
-  --keep-monthly=3 \
   "$REPO"
 
 echo "$(ts) [INFO] Compacting repository"
