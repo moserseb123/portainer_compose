@@ -101,6 +101,11 @@ ping_hc() {
 
 on_error() {
   local ec=$?
+  # Capture the failing command and callsite for a more descriptive reason
+  local failed_cmd="${BASH_COMMAND:-unknown}"
+  local callsite
+  callsite="$(caller 0 2>/dev/null || true)"
+
   # Try to disable maintenance mode if we set it
   if [[ "${MAINT_MODE_ENABLED:-0}" -eq 1 ]]; then
     echo "$(ts) [WARN] Error occurred; attempting to disable Immich maintenance mode"
@@ -108,8 +113,11 @@ on_error() {
   fi
   # Clean up DB dump on error
   cleanup_db_dump
-  ping_hc "/fail" "Immich backup FAILED with exit code ${ec} at $(ts)"
-  echo "$(ts) [ERROR] Backup failed (exit ${ec})"
+
+  local reason
+  reason="Immich backup FAILED: exit ${ec}; command='${failed_cmd}'; caller='${callsite}'; time=$(ts)"
+  ping_hc "/fail" "$reason"
+  echo "$(ts) [ERROR] Backup failed (exit ${ec}); command='${failed_cmd}'; caller='${callsite}'"
   exit "$ec"
 }
 trap on_error ERR
