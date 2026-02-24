@@ -11,6 +11,7 @@ services:
       - /etc/Cloud/Immich:/etc/Cloud/Immich   # replace with the directory you want to back up
       - /mnt/usb/Immich:/mnt/usb/Immich
       - /mnt/fritz-nas/Volume/Backup_Test:/Backup
+      - /var/run/docker.sock:/var/run/docker.sock:rw
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.borgui-router.entrypoints=websecure"
