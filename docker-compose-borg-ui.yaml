@@ -1,0 +1,47 @@
+services:
+  borg-ui:
+    image: ainullcode/borg-ui:latest
+    container_name: borg-web-ui
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - /etc/Cloud/BorgUI/data:/data
+      - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
+      - /etc/Cloud/Immich/data:/local:ro   # replace with the directory you want to back up
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.borgui-router.entrypoints=websecure"
+      - "traefik.http.routers.borgui-router.rule=Host(`backup.moser.ddnsfree.com`)"
+      - "traefik.http.routers.borgui-router.service=borgui-service"
+      - "traefik.http.routers.borgui-router.tls=true"
+      - "traefik.http.services.borgui-service.loadbalancer.server.port=8081"  
+    environment:
+      - TZ=Europe/Berlin               # replace with your timezone
+      - PUID=1000                      # replace with your user ID: run `id -u`
+      - PGID=1000                      # replace with your group ID: run `id -g`
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - proxy
+
+  redis:
+    image: redis:7-alpine
+    container_name: borg-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+
