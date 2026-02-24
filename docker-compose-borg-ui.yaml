@@ -8,7 +8,8 @@ services:
     volumes:
       - /etc/Cloud/BorgUI/data:/data
       - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
-      - /etc/Cloud/Immich/data:/local:ro   # replace with the directory you want to back up
+      - /etc/Cloud/Immich:/etc/Cloud/Immich   # replace with the directory you want to back up
+      - /mnt/usb/Immich:/mnt/usb/Immich
       - /mnt/fritz-nas/Volume/Backup_Test:/Backup
     labels:
       - "traefik.enable=true"
