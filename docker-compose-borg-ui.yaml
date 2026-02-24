@@ -9,6 +9,7 @@ services:
       - /etc/Cloud/BorgUI/data:/data
       - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
       - /etc/Cloud/Immich/data:/local:ro   # replace with the directory you want to back up
+      - /mnt/fritz-nas/Volume/Backup_Test:/Backup
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.borgui-router.entrypoints=websecure"
