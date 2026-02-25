@@ -8,9 +8,11 @@ services:
     volumes:
       - /etc/Cloud/BorgUI/data:/data
       - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
-      - /mnt/usb/Immich:/mnt/usb/Immich
+      # Only the my-database-backup should be writable
+      - /mnt/usb/Immich:/mnt/usb/Immich:ro
+      - /mnt/usb/Immich/my-database-backup:/mnt/usb/Immich/my-database-backup
       - /mnt/fritz-nas/Volume/Backup_Test:/Backup
-      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.borgui-router.entrypoints=websecure"
