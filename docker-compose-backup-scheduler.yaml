@@ -18,7 +18,10 @@ services:
       ofelia.job-run.evcc-backup-task.schedule: "0 0 3 * * *"
       # Tell Ofelia to start the container by name
       ofelia.job-run.evcc-backup-task.container: "evcc-backup"
-
+      # Run every day at 13:00:00 (second minute hour day month weekday)
+      ofelia.job-run.borg-ui-backup-task.schedule: "0 0 13 * * *"
+      # Tell Ofelia to start the container by name
+      ofelia.job-run.borg-ui-backup-task.container: "borg-web-ui-backup"
       
 networks:
   proxy:
