@@ -5,7 +5,7 @@ services:
     environment:
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
     volumes:
-      - /etc/bitwarden_data:/data
+      - /etc/Cloud/Bitwarden:/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bitwarden-router.rule=Host(`bitwarden.moser.ddnsfree.com`)"
@@ -48,7 +48,7 @@ services:
       TIMEZONE: "Europe/Vienna"
     # Wichtig: den Host-Pfad deiner Vaultwarden-Daten nach /bitwarden/data mounten
     volumes:
-      - /etc/bitwarden_data:/bitwarden/data
+      - /etc/Cloud/Bitwarden:/bitwarden/data
       # rclone-Konfiguration (persistente Credentials)
       - vaultwarden-rclone-data:/config
 
