@@ -56,6 +56,8 @@ services:
     networks:
       - paperless-internal     # Private internal network (DB + Redis)
       - proxy                  # Public Traefik network
+    ports:
+      - "8010:8000"      
     volumes:
       # SSD (fast, small)
       - /etc/Cloud/PaperlessNgx/data:/usr/src/paperless/data
@@ -78,7 +80,7 @@ services:
       - "traefik.http.routers.paperless-router.service=paperless-service"
 
       # Service
-      - "traefik.http.services.paperless-service.loadbalancer.server.port=8000"
+      - "traefik.http.services.paperless-service.loadbalancer.server.port=8010"
       
 networks:
   proxy:
