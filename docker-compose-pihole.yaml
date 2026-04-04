@@ -47,9 +47,21 @@ services:
     restart: unless-stopped
     
     networks:
-      - default
-      - proxy
+      pihole_macvlan:
+        ipv4_address: 192.168.178.2
+      proxy: {}
 
 networks:
   proxy:
     external: true
+
+  pihole_macvlan:
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    ipam:
+      config:
+        - subnet: "192.168.178.0/24"
+          gateway: "192.168.178.1"
+          ip_range: "192.168.178.2/32"
+    
