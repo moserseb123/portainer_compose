@@ -10,6 +10,7 @@ services:
       - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
       # Only the my-database-backup should be writable
       - /mnt/usb/Immich:/mnt/usb/Immich:ro
+      - /etc/Cloud/PiHole:/etc/Cloud/PiHole
       - /mnt/usb/Immich/my-database-backup:/mnt/usb/Immich/my-database-backup
       - /mnt/fritz-nas/Volume/Backup:/Backup
       - /var/run/docker.sock:/var/run/docker.sock
