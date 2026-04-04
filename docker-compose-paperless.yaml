@@ -78,7 +78,7 @@ services:
       - "traefik.http.routers.paperless-router.service=paperless-service"
 
       # Service
-      - "traefik.http.services.paperless-service.loadbalancer.server.port=8000"
+      - "traefik.docker.network=proxy"
       
 networks:
   proxy:
