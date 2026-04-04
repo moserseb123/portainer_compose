@@ -30,12 +30,16 @@ services:
   broker:
     image: docker.io/library/redis:8
     restart: unless-stopped
+    networks:
+      - paperless-internal
     volumes:
       - /etc/Cloud/PaperlessNgx/redis:/data
 
   db:
     image: docker.io/library/postgres:18
     restart: unless-stopped
+    networks:
+      - paperless-internal
     volumes:
       - /etc/Cloud/PaperlessNgx/db:/var/lib/postgresql
     environment:
@@ -50,7 +54,8 @@ services:
       - db
       - broker
     networks:
-      - proxy
+      - paperless-internal     # Private internal network (DB + Redis)
+      - proxy                  # Public Traefik network
     volumes:
       # SSD (fast, small)
       - /etc/Cloud/PaperlessNgx/data:/usr/src/paperless/data
@@ -74,10 +79,12 @@ services:
 
       # Service
       - "traefik.http.services.paperless-service.loadbalancer.server.port=8000"
-
+      
 networks:
   proxy:
     external: true
+  paperless-internal:
+    driver: bridge
 
 volumes:
   # Not used since mapped explicitly, but kept for Portainer compatibility
