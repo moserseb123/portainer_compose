@@ -70,14 +70,11 @@ services:
       - stack.env
     labels:
       - "traefik.enable=true"
-
-      # Router
-      - "traefik.http.routers.paperless-router.rule=Host(`paperless.moser.ddnsfree.com`)"
       - "traefik.http.routers.paperless-router.entrypoints=websecure"
-      - "traefik.http.routers.paperless-router.tls=true"
+      - "traefik.http.routers.paperless-router.rule=Host(`paperless.moser.ddnsfree.com`)"
       - "traefik.http.routers.paperless-router.service=paperless-service"
-
-      # Service
+      - "traefik.http.routers.paperless-router.tls=true"
+      - "traefik.http.services.paperless-service.loadbalancer.server.port=8000"
       - "traefik.docker.network=proxy"
       
 networks:
