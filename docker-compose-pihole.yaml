@@ -35,7 +35,8 @@ services:
       - "traefik.http.routers.pihole-router.entrypoints=websecure"
       - "traefik.http.routers.pihole-router.service=pihole-service"
       - "traefik.http.routers.pihole-router.tls=true"
-      - "traefik.http.services.pihole-service.loadbalancer.server.port=80"  
+      - "traefik.http.services.pihole-service.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
     cap_add:
       # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed
