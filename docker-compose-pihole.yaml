@@ -8,7 +8,7 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
       # Default HTTP Port
-      #- "8082:8082/tcp"
+      - "8082:80/tcp"
       # Default HTTPs Port. FTL will generate a self-signed certificate
       #- "443:443/tcp"
       # Uncomment the below if using Pi-hole as your DHCP Server
