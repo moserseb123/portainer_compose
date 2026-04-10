@@ -1,6 +1,6 @@
 services:
   borg-ui:
-    image: ainullcode/borg-ui:latest
+    image: ainullcode/borg-ui:1.78.0
     container_name: borg-web-ui
     restart: unless-stopped
     ports:
