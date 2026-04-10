@@ -18,7 +18,7 @@ services:
       - proxy
       
   vaultwarden-backup:
-    image: ttionya/vaultwarden-backup:latest
+    image: ttionya/vaultwarden-backup:1.26.6
     container_name: vaultwarden-backup
     restart: always
     depends_on:
