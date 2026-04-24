@@ -96,9 +96,8 @@ services:
 
     networks:
       - proxy
-
-
-   borg-ui-backup:
+      
+  borg-ui-backup:
     image: alpine:latest
     container_name: borg-web-ui-backup
     restart: "no"
