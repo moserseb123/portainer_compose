@@ -1,1 +1,140 @@
+services:
+  borg-ui:
+    image: karanhudia/borg-ui:2.0.7
+    container_name: borg-web-ui
+    restart: unless-stopped
 
+    # ⚠️ Only required if you do SSHFS remote-to-remote backups
+    privileged: false
+
+    ports:
+      - "8081:8081"
+
+    volumes:
+      # Application data (DB, secret key, logs)
+      - /etc/Cloud/BorgUI/data:/data
+
+      # Borg cache
+      - /etc/Cloud/BorgUI/cache:/home/borg/.cache/borg
+
+      # Backup source / targets
+      - /mnt/usb/Immich:/mnt/usb/Immich:ro
+      - /etc/Cloud/PiHole:/etc/Cloud/PiHole:ro
+      - /mnt/usb/Immich/my-database-backup:/mnt/usb/Immich/my-database-backup:rw
+      - /mnt/fritz-nas/Volume/Backup:/Backup:rw
+
+      # Docker hooks (container stop/start during backup)
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+      # Sync timezone
+      - /etc/localtime:/etc/localtime:ro
+
+    environment:
+      # --- Core ---
+      - PORT=8081
+      - ENVIRONMENT=production
+      - TZ=Europe/Berlin
+
+      # --- Permissions ---
+      - PUID=1000
+      - PGID=1000
+
+      # --- Local mount detection (VERY IMPORTANT) ---
+      - LOCAL_MOUNT_POINTS=/mnt/usb/Immich,/etc/Cloud,/Backup
+
+      # --- Redis cache ---
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - CACHE_TTL_SECONDS=7200
+      - CACHE_MAX_SIZE_MB=2048
+
+      # --- Licensing ---
+      - ACTIVATION_SERVICE_URL=https://license.borgui.com
+      - ENABLE_STARTUP_LICENSE_SYNC=true
+
+      # Optional (recommended for first start)
+      # - INITIAL_ADMIN_PASSWORD=change-me-now
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.borgui.rule=Host(`backup.moser.ddnsfree.com`)"
+      - "traefik.http.routers.borgui.entrypoints=websecure"
+      - "traefik.http.routers.borgui.tls=true"
+      - "traefik.http.services.borgui.loadbalancer.server.port=8081"
+
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost:8081/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    networks:
+      - proxy
+
+  redis:
+    image: redis:7-alpine
+    container_name: borg-redis
+    restart: unless-stopped
+
+    command: >
+      redis-server
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+    networks:
+      - proxy
+
+
+   borg-ui-backup:
+    image: alpine:latest
+    container_name: borg-web-ui-backup
+    restart: "no"
+    networks:
+      - proxy
+    environment:
+      - HEALTH_CHECK_URL=${HEALTH_CHECK_URL}
+      - SLEEP_SECONDS=10
+      - RETENTION_DAYS=15
+    volumes:
+      - /etc/Cloud/BorgUI/data:/source:ro
+      - /mnt/fritz-nas/Volume/Backup/BorgUI:/destination
+    command: >
+      sh -c "
+      apk add --no-cache zip curl &&
+      echo 'Waiting for NAS to wake up...' &&
+      sleep $$SLEEP_SECONDS &&
+      if ls /destination > /dev/null 2>&1; then
+        FILENAME=backup.$(date +%Y_%m_%d).zip &&
+        echo 'Removing existing file to prevent stale handles...' &&
+        rm -f /destination/$$FILENAME &&
+        echo 'Creating new backup archive...' &&
+        if zip -r /destination/$$FILENAME /source; then
+          echo 'Backup successful. Cleaning up old files...' &&
+          find /destination -name 'backup.*.zip' -type f -mtime +$$RETENTION_DAYS -delete &&
+          curl -m 10 --retry 5 $$HEALTH_CHECK_URL;
+        else
+          echo 'Error: Zip failed';
+          exit 1;
+        fi
+      else
+        echo 'Error: NAS mount is stale or disconnected';
+        exit 1;
+      fi
+      "    
+
+networks:
+  proxy:
+    external: true
