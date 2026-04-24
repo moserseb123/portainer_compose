@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.6.13
+    image: traefik:v3.6.14
     ports:
       - "80:80/tcp"
       - "443:443/tcp"
