@@ -1,6 +1,6 @@
 services:
   vaultwarden:
-    image: vaultwarden/server:1.36.0
+    image: vaultwarden/server:1.37.1
     container_name: vaultwarden
     environment:
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
@@ -18,7 +18,7 @@ services:
       - proxy
       
   vaultwarden-backup:
-    image: ttionya/vaultwarden-backup:1.26.8
+    image: ttionya/vaultwarden-backup:1.27.0
     container_name: vaultwarden-backup
     restart: always
     depends_on:
