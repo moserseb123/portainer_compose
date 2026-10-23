@@ -1,6 +1,6 @@
 services:
   evcc:
-    image: evcc-io/evcc:0.306.3
+    image: evcc-io/evcc:0.317.2
     ports:
       - "7070:7070"
     container_name: evcc
